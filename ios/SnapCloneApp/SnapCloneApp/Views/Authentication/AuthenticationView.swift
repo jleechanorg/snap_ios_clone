@@ -139,6 +139,40 @@ struct SignInForm: View {
                     .underline()
             }
             .padding(.top, 10)
+            
+            // Divider
+            HStack {
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(.white.opacity(0.5))
+                Text("OR")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            .padding(.vertical, 20)
+            
+            // Google Sign-In button
+            Button(action: {
+                Task {
+                    await authViewModel.signInWithGoogle()
+                }
+            }) {
+                HStack {
+                    Image(systemName: "globe")
+                        .foregroundColor(.white)
+                    Text("Continue with Google")
+                        .foregroundColor(.white)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(25)
+            }
+            .disabled(authViewModel.isLoading)
         }
     }
 }

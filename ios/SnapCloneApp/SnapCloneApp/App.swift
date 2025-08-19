@@ -1,5 +1,6 @@
 import SwiftUI
 import Firebase
+import GoogleSignIn
 
 @main
 struct SnapCloneApp: App {
@@ -10,6 +11,11 @@ struct SnapCloneApp: App {
     init() {
         // Configure Firebase
         FirebaseApp.configure()
+        
+        // Configure Google Sign-In
+        if let clientID = FirebaseApp.app()?.options.clientID {
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        }
         
         // Configure appearance
         configureAppAppearance()

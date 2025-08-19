@@ -108,6 +108,14 @@
 				<string>snapclone</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>GoogleSignIn</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.750246064736-9mhbmjo1fp60h1s1u747d5qic67gk81o</string>
+			</array>
+		</dict>
 	</array>
 	
 	<!-- Firebase Configuration -->
@@ -118,6 +126,28 @@
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)com.snapclone.app</string>
+	</array>
+	
+	<!-- Snapchat Login Kit Configuration -->
+	<key>SCSDKClientId</key>
+	<string>356835a7-f2e0-4a5b-88ef-f922ebc81e18</string>
+	
+	<key>SCSDKRedirectUrl</key>
+	<string>snapclone://snap-kit/oauth2</string>
+	
+	<key>SCSDKScopes</key>
+	<array>
+		<string>https://auth.snapchat.com/oauth2/api/user.external_id</string>
+		<string>https://auth.snapchat.com/oauth2/api/user.display_name</string>
+		<string>https://auth.snapchat.com/oauth2/api/user.bitmoji.avatar</string>
+	</array>
+	
+	<!-- App Store Detection for Snapchat -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>snapchat</string>
+		<string>bitmoji-sdk</string>
+		<string>sc-sdk</string>
 	</array>
 	
 	<!-- Device Orientation -->

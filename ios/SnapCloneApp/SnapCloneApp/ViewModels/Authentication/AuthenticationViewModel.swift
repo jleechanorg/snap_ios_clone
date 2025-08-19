@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 import Firebase
+import FirebaseAuth
+import GoogleSignIn
 import Combine
 
 @MainActor
@@ -111,6 +113,49 @@ class AuthenticationViewModel: ObservableObject {
             try await authService.resetPassword(email: email)
             showErrorMessage("Password reset email sent successfully", isError: false)
             showForgotPassword = false
+        } catch {
+            handleAuthError(error)
+        }
+        
+        isLoading = false
+    }
+    
+    func signInWithGoogle() async {
+        guard let presentingViewController = UIApplication.shared.windows.first?.rootViewController else {
+            showErrorMessage("Unable to access presenting view controller")
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingViewController)
+            let user = gidSignInResult.user
+            guard let idToken = user.idToken?.tokenString else {
+                showErrorMessage("Unable to get ID token")
+                isLoading = false
+                return
+            }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+            let authResult = try await Auth.auth().signIn(with: credential)
+            
+            // Create user profile in Firestore if needed
+            let firebaseUser = authResult.user
+            let userProfile = User(
+                id: firebaseUser.uid,
+                username: firebaseUser.email?.components(separatedBy: "@").first ?? "user",
+                email: firebaseUser.email ?? "",
+                displayName: firebaseUser.displayName ?? "",
+                profileImageURL: firebaseUser.photoURL?.absoluteString ?? "",
+                createdAt: Date()
+            )
+            
+            try await FirebaseAuthService.shared.createUserProfile(user: userProfile)
+            currentUser = userProfile
+            isAuthenticated = true
+            
         } catch {
             handleAuthError(error)
         }
