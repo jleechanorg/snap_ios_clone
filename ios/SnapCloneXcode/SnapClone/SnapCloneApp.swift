@@ -1,17 +1,19 @@
 import SwiftUI
-import Firebase
+import FirebaseCore
+import FirebaseAuth
+import FirebaseFirestore
+import FirebaseStorage
 
 @main
 struct SnapCloneApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    
     // Initialize ViewModels
     @StateObject private var authViewModel = AuthenticationViewModel()
     @StateObject private var cameraViewModel = CameraViewModel()
     @StateObject private var friendsViewModel = FriendsViewModel()
     
     init() {
-        // Configure Firebase
-        FirebaseApp.configure()
-        
         // Configure app appearance for dark theme
         configureAppAppearance()
     }
@@ -45,6 +47,28 @@ struct SnapCloneApp: App {
         
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        configureFirebase()
+        return true
+    }
+    
+    private func configureFirebase() {
+        guard let plistPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+              let options = FirebaseOptions(contentsOfFile: plistPath) else {
+            fatalError("Firebase configuration failed: GoogleService-Info.plist not found or invalid")
+        }
+        
+        FirebaseApp.configure(options: options)
+        
+        // Enable Firestore offline persistence
+        let settings = FirestoreSettings()
+        settings.isPersistenceEnabled = true
+        settings.cacheSettings = MemoryCacheSettings()
+        Firestore.firestore().settings = settings
     }
 }
 

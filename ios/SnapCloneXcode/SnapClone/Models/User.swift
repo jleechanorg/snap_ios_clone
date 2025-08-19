@@ -18,7 +18,7 @@ final class User: NSObject, Codable, Identifiable, ObservableObject {
     // MARK: - Properties
     
     /// Unique identifier for the user (matches Firebase Auth UID)
-    let id: String
+    var id: String
     
     /// Unique username for the user
     @Published var username: String
@@ -291,5 +291,27 @@ extension User {
             formatter.dateStyle = .short
             return formatter.string(from: lastActive)
         }
+    }
+}
+
+// MARK: - UserSearchResult
+
+/// Represents a user search result for friend discovery
+struct UserSearchResult: Identifiable, Codable {
+    let id: String
+    let username: String
+    let displayName: String
+    let profileImageURL: String?
+    let isOnline: Bool
+    let lastActive: Date
+    
+    /// Initialize from User model
+    init(from user: User) {
+        self.id = user.id
+        self.username = user.username
+        self.displayName = user.displayName
+        self.profileImageURL = user.profileImageURL
+        self.isOnline = user.isOnline
+        self.lastActive = user.lastActive
     }
 }

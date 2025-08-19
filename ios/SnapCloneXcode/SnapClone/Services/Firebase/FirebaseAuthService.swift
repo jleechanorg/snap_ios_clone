@@ -1,6 +1,7 @@
 import Foundation
 import Firebase
 import FirebaseAuth
+import FirebaseFirestore
 import Combine
 
 protocol AuthServiceProtocol {
@@ -47,7 +48,12 @@ class FirebaseAuthService: AuthServiceProtocol {
         try await changeRequest.commitChanges()
         
         // Create user profile in Firestore
-        let user = User(username: username, email: email, displayName: displayName)
+        let user = User(
+            id: firebaseUser.uid,
+            username: username, 
+            email: email, 
+            displayName: displayName
+        )
         try await createUserProfile(user: user, uid: firebaseUser.uid)
         
         return user
@@ -108,10 +114,7 @@ class FirebaseAuthService: AuthServiceProtocol {
     // MARK: - User Profile Management
     
     private func createUserProfile(user: User, uid: String) async throws {
-        var userToSave = user
-        userToSave.id = uid
-        
-        try await firestore.collection("users").document(uid).setData(from: userToSave)
+        try await firestore.collection("users").document(uid).setData(user.toDictionary())
     }
     
     private func fetchUserProfile(uid: String) async throws -> User {
@@ -121,11 +124,10 @@ class FirebaseAuthService: AuthServiceProtocol {
             throw AuthError.userNotFound
         }
         
-        do {
-            return try document.data(as: User.self)
-        } catch {
+        guard let user = User.from(document: document) else {
             throw AuthError.invalidUserData
         }
+        return user
     }
     
     func fetchUserProfile(by username: String) async throws -> User? {
@@ -136,15 +138,11 @@ class FirebaseAuthService: AuthServiceProtocol {
             return nil
         }
         
-        return try document.data(as: User.self)
+        return User.from(document: document)
     }
     
     func updateUserProfile(_ user: User) async throws {
-        guard let uid = user.id else {
-            throw AuthError.invalidUserData
-        }
-        
-        try await firestore.collection("users").document(uid).setData(from: user, merge: true)
+        try await firestore.collection("users").document(user.id).updateData(user.toDictionary())
     }
     
     // MARK: - Username Management
@@ -179,13 +177,13 @@ class FirebaseAuthService: AuthServiceProtocol {
         
         // Combine results from both queries
         for document in usernameSnapshot.documents {
-            if let user = try? document.data(as: User.self) {
+            if let user = User.from(document: document) {
                 users.append(user)
             }
         }
         
         for document in displayNameSnapshot.documents {
-            if let user = try? document.data(as: User.self),
+            if let user = User.from(document: document),
                !users.contains(where: { $0.id == user.id }) {
                 users.append(user)
             }

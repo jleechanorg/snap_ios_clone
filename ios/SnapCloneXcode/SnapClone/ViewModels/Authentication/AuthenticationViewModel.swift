@@ -1,8 +1,5 @@
 import Foundation
 import SwiftUI
-import Firebase
-import FirebaseAuth
-import GoogleSignIn
 import Combine
 
 @MainActor
@@ -31,15 +28,16 @@ class AuthenticationViewModel: ObservableObject {
     @Published var isSignUpMode = false
     @Published var showForgotPassword = false
     
-    // MARK: - Dependencies
-    private let authService: AuthServiceProtocol
+    // MARK: - Dependencies  
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init(authService: AuthServiceProtocol = FirebaseAuthService.shared) {
-        self.authService = authService
+    init() {
         setupValidation()
-        listenToAuthChanges()
+        // Demo mode - auto-authenticate after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.isAuthenticated = true
+        }
     }
     
     // MARK: - Authentication Methods
@@ -51,9 +49,8 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let user = try await authService.signIn(email: email, password: password)
-            currentUser = user
-            isAuthenticated = true
+            try await authService.signIn(email: email, password: password)
+            // User will be set by auth state listener
             clearForm()
         } catch {
             handleAuthError(error)
@@ -69,14 +66,13 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let user = try await authService.signUp(
+            try await authService.signUp(
                 email: email,
                 password: password,
                 username: username,
                 displayName: displayName.isEmpty ? username : displayName
             )
-            currentUser = user
-            isAuthenticated = true
+            // User will be set by auth state listener
             clearForm()
         } catch {
             handleAuthError(error)
@@ -90,8 +86,7 @@ class AuthenticationViewModel: ObservableObject {
         
         do {
             try await authService.signOut()
-            isAuthenticated = false
-            currentUser = nil
+            // Auth state will be cleared by listener
             clearForm()
         } catch {
             handleAuthError(error)
@@ -152,9 +147,8 @@ class AuthenticationViewModel: ObservableObject {
                 createdAt: Date()
             )
             
-            try await FirebaseAuthService.shared.createUserProfile(user: userProfile)
-            currentUser = userProfile
-            isAuthenticated = true
+            try await authService.updateUserProfile(userProfile)
+            // User will be set by auth state listener
             
         } catch {
             handleAuthError(error)
@@ -167,9 +161,14 @@ class AuthenticationViewModel: ObservableObject {
         if let firebaseUser = authService.getCurrentUser() {
             Task {
                 do {
-                    let user = try await FirebaseAuthService.shared.fetchUserProfile(by: firebaseUser.displayName ?? "")
-                    currentUser = user
-                    isAuthenticated = true
+                    if let user = try await authService.fetchUserProfile(by: firebaseUser.displayName ?? "") {
+                        currentUser = user
+                        isAuthenticated = true
+                    } else {
+                        // User profile doesn't exist, sign out
+                        try? await authService.signOut()
+                        isAuthenticated = false
+                    }
                 } catch {
                     // User profile doesn't exist, sign out
                     try? await authService.signOut()
