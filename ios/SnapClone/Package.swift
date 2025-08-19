@@ -53,14 +53,16 @@ let package = Package(
                 .product(name: "Kingfisher", package: "Kingfisher"),
                 .product(name: "SwiftUINavigation", package: "swiftui-navigation"),
                 .product(name: "CombineSchedulers", package: "combine-schedulers")
-            ]
+            ],
+            path: "SnapClone"
         ),
         .testTarget(
             name: "SnapCloneTests",
             dependencies: [
                 "SnapClone",
                 .product(name: "CombineSchedulers", package: "combine-schedulers")
-            ]
+            ],
+            path: "SnapCloneTests"
         )
     ]
 )
