@@ -7,15 +7,97 @@ import FirebaseCore
 @main
 struct SnapCloneApp: App {
     init() {
-        // Firebase configuration handled by FirebaseManager.shared
-        // No need to call Firebase.configure() here as it's handled in FirebaseManager
-        print("🔥 Production Firebase: Initialized via FirebaseManager")
+        // Initialize Firebase on app startup
+        FirebaseApp.configure()
+        print("🔥 Production Firebase: Configured successfully")
     }
     
     var body: some Scene {
         WindowGroup {
-            FirebaseTestView()
+            ContentView()
                 .preferredColorScheme(.dark)
+        }
+    }
+}
+
+struct ContentView: View {
+    @State private var isAuthenticated = false
+    
+    var body: some View {
+        if isAuthenticated {
+            MainAppView(isAuthenticated: $isAuthenticated)
+        } else {
+            LoginView(isAuthenticated: $isAuthenticated)
+        }
+    }
+}
+
+struct LoginView: View {
+    @Binding var isAuthenticated: Bool
+    @State private var email = ""
+    @State private var password = ""
+    @State private var autoSkipTimer: Timer?
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            // Logo
+            VStack(spacing: 10) {
+                Text("👻")
+                    .font(.system(size: 80))
+                
+                Text("SnapClone")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+            }
+            
+            // Login Form
+            VStack(spacing: 20) {
+                TextField("Email", text: $email)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .autocapitalization(.none)
+                    .keyboardType(.emailAddress)
+                
+                SecureField("Password", text: $password)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Button("Sign In") {
+                    // For testing purposes, just authenticate
+                    withAnimation {
+                        isAuthenticated = true
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.yellow)
+                .foregroundColor(.black)
+                .cornerRadius(10)
+                .fontWeight(.bold)
+                
+                Button("Skip Authentication (Demo)") {
+                    withAnimation {
+                        isAuthenticated = true
+                    }
+                }
+                .foregroundColor(.gray)
+            }
+            .padding(.horizontal, 40)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
+        .ignoresSafeArea()
+        .onAppear {
+            // Auto-skip authentication after 3 seconds for testing
+            autoSkipTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+                withAnimation {
+                    isAuthenticated = true
+                }
+            }
+        }
+        .onDisappear {
+            autoSkipTimer?.invalidate()
         }
     }
 }
