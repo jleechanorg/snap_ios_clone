@@ -315,3 +315,46 @@ struct UserSearchResult: Identifiable, Codable {
         self.lastActive = user.lastActive
     }
 }
+
+// MARK: - Mock Data
+extension User {
+    static var mockFriends: [User] {
+        return [
+            User(
+                id: "friend1",
+                username: "john_doe",
+                email: "john@example.com",
+                displayName: "John Doe",
+                isOnline: true
+            ),
+            User(
+                id: "friend2",
+                username: "jane_smith", 
+                email: "jane@example.com",
+                displayName: "Jane Smith",
+                isOnline: false
+            ),
+            User(
+                id: "friend3",
+                username: "mike_j",
+                email: "mike@example.com",
+                displayName: "Mike Johnson",
+                isOnline: true
+            ),
+            User(
+                id: "friend4",
+                username: "sarah_w",
+                email: "sarah@example.com",
+                displayName: "Sarah Wilson",
+                isOnline: false
+            ),
+            User(
+                id: "friend5",
+                username: "alex_brown",
+                email: "alex@example.com", 
+                displayName: "Alex Brown",
+                isOnline: true
+            )
+        ]
+    }
+}

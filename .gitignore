@@ -49,4 +49,6 @@ npm-debug.log*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
+Thumbs.db# Ignore Firebase SDK to avoid large file issues
+ios/SnapCloneXcode/Firebase/
+ios/SnapCloneXcode/Firebase.zip

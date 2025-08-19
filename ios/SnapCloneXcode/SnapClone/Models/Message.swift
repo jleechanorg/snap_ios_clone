@@ -60,8 +60,17 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
     /// ID of the user who receives the message
     let receiverId: String
     
+    /// Conversation ID for grouping messages
+    let conversationId: String
+    
     /// Message content (text or media URL)
-    @Published var content: String
+    @Published var content: String?
+    
+    /// Media URL for image/video messages
+    let mediaURL: String?
+    
+    /// Whether the message has been read
+    @Published var isRead: Bool
     
     /// Type of message (text, image, video, audio)
     let type: MessageType
@@ -93,12 +102,15 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         case id
         case senderId
         case receiverId
+        case conversationId
         case content
+        case mediaURL
         case type
         case timestamp
         case expiresAt
         case viewedAt
         case isEphemeral
+        case isRead
         case viewDuration
         case status
         case metadata
@@ -109,34 +121,43 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
     /// Initialize a new message
     /// - Parameters:
     ///   - id: Unique message identifier
+    ///   - conversationId: ID of the conversation
     ///   - senderId: ID of the sender
     ///   - receiverId: ID of the receiver
     ///   - content: Message content
-    ///   - type: Message type
+    ///   - mediaURL: Media URL for image/video messages
+    ///   - messageType: Message type (renamed from type)
     ///   - timestamp: Creation timestamp
     ///   - expiresAt: Optional expiration date
     ///   - viewedAt: Optional view timestamp
     ///   - isEphemeral: Whether message is ephemeral
+    ///   - isRead: Whether message has been read
     ///   - viewDuration: View duration for ephemeral messages
     ///   - status: Message status
     ///   - metadata: Additional metadata
     init(id: String = UUID().uuidString,
+         conversationId: String,
          senderId: String,
          receiverId: String,
-         content: String,
-         type: MessageType,
+         content: String? = nil,
+         mediaURL: String? = nil,
+         messageType: MessageType,
          timestamp: Date = Date(),
          expiresAt: Date? = nil,
          viewedAt: Date? = nil,
          isEphemeral: Bool = true,
+         isRead: Bool = false,
          viewDuration: TimeInterval = 10.0,
          status: MessageStatus = .sent,
          metadata: [String: Any] = [:]) {
         self.id = id
+        self.conversationId = conversationId
         self.senderId = senderId
         self.receiverId = receiverId
         self.content = content
-        self.type = type
+        self.mediaURL = mediaURL
+        self.type = messageType
+        self.isRead = isRead
         self.timestamp = timestamp
         self.expiresAt = expiresAt
         self.viewedAt = viewedAt
@@ -155,7 +176,10 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         id = try container.decode(String.self, forKey: .id)
         senderId = try container.decode(String.self, forKey: .senderId)
         receiverId = try container.decode(String.self, forKey: .receiverId)
-        content = try container.decode(String.self, forKey: .content)
+        conversationId = try container.decode(String.self, forKey: .conversationId)
+        content = try container.decodeIfPresent(String.self, forKey: .content)
+        mediaURL = try container.decodeIfPresent(String.self, forKey: .mediaURL)
+        isRead = try container.decodeIfPresent(Bool.self, forKey: .isRead) ?? false
         type = try container.decode(MessageType.self, forKey: .type)
         
         // Handle date decoding from Firestore Timestamp
@@ -418,11 +442,13 @@ extension Message {
                     text: String,
                     isEphemeral: Bool = true,
                     viewDuration: TimeInterval = 10.0) {
+        let conversationId = [senderId, receiverId].sorted().joined(separator: "_")
         self.init(
+            conversationId: conversationId,
             senderId: senderId,
             receiverId: receiverId,
             content: text,
-            type: .text,
+            messageType: .text,
             isEphemeral: isEphemeral,
             viewDuration: viewDuration
         )
@@ -442,13 +468,71 @@ extension Message {
                     type: MessageType,
                     isEphemeral: Bool = true,
                     viewDuration: TimeInterval = 10.0) {
+        let conversationId = [senderId, receiverId].sorted().joined(separator: "_")
         self.init(
+            conversationId: conversationId,
             senderId: senderId,
             receiverId: receiverId,
-            content: mediaURL,
-            type: type,
+            mediaURL: mediaURL,
+            messageType: type,
             isEphemeral: isEphemeral,
             viewDuration: viewDuration
         )
+    }
+}
+
+// MARK: - Mock Data
+extension Message {
+    static func mockMessages(for conversationId: String) -> [Message] {
+        let baseDate = Date()
+        
+        return [
+            Message(
+                conversationId: conversationId,
+                senderId: "friend1",
+                receiverId: "current_user",
+                content: "Hey! What's up? 👋",
+                messageType: .text,
+                timestamp: baseDate.addingTimeInterval(-3600), // 1 hour ago
+                isRead: true
+            ),
+            Message(
+                conversationId: conversationId,
+                senderId: "current_user",
+                receiverId: "friend1",
+                content: "Not much, just working on some code!",
+                messageType: .text,
+                timestamp: baseDate.addingTimeInterval(-3500), // 58 minutes ago
+                isRead: true
+            ),
+            Message(
+                conversationId: conversationId,
+                senderId: "friend1",
+                receiverId: "current_user",
+                content: "Cool! I just took this amazing photo",
+                mediaURL: "https://picsum.photos/300/400?random=1",
+                messageType: .image,
+                timestamp: baseDate.addingTimeInterval(-1800), // 30 minutes ago
+                isRead: false
+            ),
+            Message(
+                conversationId: conversationId,
+                senderId: "current_user",
+                receiverId: "friend1",
+                content: "That looks awesome! 📸",
+                messageType: .text,
+                timestamp: baseDate.addingTimeInterval(-1200), // 20 minutes ago
+                isRead: true
+            ),
+            Message(
+                conversationId: conversationId,
+                senderId: "friend1",
+                receiverId: "current_user",
+                content: "Want to grab coffee later?",
+                messageType: .text,
+                timestamp: baseDate.addingTimeInterval(-300), // 5 minutes ago
+                isRead: false
+            )
+        ]
     }
 }
