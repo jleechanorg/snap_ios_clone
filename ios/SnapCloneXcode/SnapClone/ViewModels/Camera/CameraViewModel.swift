@@ -3,6 +3,8 @@ import SwiftUI
 import AVFoundation
 import Photos
 import Combine
+import Firebase
+import FirebaseStorage
 
 @MainActor
 class CameraViewModel: ObservableObject {
