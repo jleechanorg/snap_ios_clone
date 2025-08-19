@@ -1,74 +1,102 @@
 import SwiftUI
 import FirebaseCore
-import FirebaseAuth
-import FirebaseFirestore
-import FirebaseStorage
+
+// Production Firebase implementation now in Services/FirebaseManager.swift
+// Import FirebaseManager for app-wide Firebase access
 
 @main
 struct SnapCloneApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
-    // Initialize ViewModels
-    @StateObject private var authViewModel = AuthenticationViewModel()
-    @StateObject private var cameraViewModel = CameraViewModel()
-    @StateObject private var friendsViewModel = FriendsViewModel()
-    
     init() {
-        // Configure app appearance for dark theme
-        configureAppAppearance()
+        // Firebase configuration handled by FirebaseManager.shared
+        // No need to call Firebase.configure() here as it's handled in FirebaseManager
+        print("🔥 Production Firebase: Initialized via FirebaseManager")
     }
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authViewModel)
-                .environmentObject(cameraViewModel)
-                .environmentObject(friendsViewModel)
+            FirebaseTestView()
                 .preferredColorScheme(.dark)
         }
     }
-    
-    private func configureAppAppearance() {
-        // Configure navigation bar appearance
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.black
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        
-        // Configure tab bar appearance
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = UIColor.black
-        
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-    }
 }
 
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        configureFirebase()
-        return true
-    }
+struct FirebaseTestView: View {
+    @StateObject private var firebaseManager = FirebaseManager.shared
     
-    private func configureFirebase() {
-        guard let plistPath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-              let options = FirebaseOptions(contentsOfFile: plistPath) else {
-            fatalError("Firebase configuration failed: GoogleService-Info.plist not found or invalid")
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("🔥 Production Firebase Test")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            
+            if firebaseManager.isConfigured {
+                VStack(spacing: 10) {
+                    Text("✅ Firebase SDK Configured")
+                        .foregroundColor(.green)
+                        .font(.headline)
+                    
+                    Text("Firebase App: \(firebaseManager.app != nil ? "Available" : "Not Available")")
+                        .foregroundColor(.white)
+                    
+                    Text("Firebase Auth: \(firebaseManager.auth != nil ? "Available" : "Not Available")")
+                        .foregroundColor(.white)
+                    
+                    Text("Firebase Firestore: \(firebaseManager.firestore != nil ? "Available" : "Not Available")")
+                        .foregroundColor(.white)
+                    
+                    Text("Firebase Storage: \(firebaseManager.storage != nil ? "Available" : "Not Available")")
+                        .foregroundColor(.white)
+                    
+                    if let user = firebaseManager.currentUser {
+                        Text("👤 Authenticated: \(user.email ?? "Unknown")")
+                            .foregroundColor(.blue)
+                    } else {
+                        Text("👤 Not Authenticated")
+                            .foregroundColor(.orange)
+                    }
+                    
+                    if firebaseManager.isAuthenticating {
+                        ProgressView("Authenticating...")
+                            .foregroundColor(.white)
+                    }
+                    
+                    if let error = firebaseManager.lastError {
+                        Text("⚠️ Error: \(error.localizedDescription)")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding()
+                            .background(Color.red.opacity(0.2))
+                            .cornerRadius(8)
+                    }
+                    
+                    Text("🚀 Production Firebase SDK Active!")
+                        .foregroundColor(.green)
+                        .font(.caption)
+                        .padding()
+                        .background(Color.green.opacity(0.2))
+                        .cornerRadius(8)
+                }
+            } else {
+                VStack(spacing: 10) {
+                    Text("❌ Firebase Configuration Failed")
+                        .foregroundColor(.red)
+                        .font(.headline)
+                    
+                    if let error = firebaseManager.lastError {
+                        Text("Error: \(error.localizedDescription)")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding()
+                            .background(Color.red.opacity(0.2))
+                            .cornerRadius(8)
+                    }
+                }
+            }
+            
+            Spacer()
         }
-        
-        FirebaseApp.configure(options: options)
-        
-        // Enable Firestore offline persistence
-        let settings = FirestoreSettings()
-        settings.isPersistenceEnabled = true
-        settings.cacheSettings = MemoryCacheSettings()
-        Firestore.firestore().settings = settings
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
     }
 }
-
