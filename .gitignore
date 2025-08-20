@@ -52,3 +52,6 @@ ehthumbs.db
 Thumbs.db# Ignore Firebase SDK to avoid large file issues
 ios/SnapCloneXcode/Firebase/
 ios/SnapCloneXcode/Firebase.zip
+
+# Rely on global ~/.claude configuration instead of project-specific
+.claude/
