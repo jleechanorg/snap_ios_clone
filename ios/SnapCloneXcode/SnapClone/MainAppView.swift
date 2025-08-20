@@ -1,34 +1,18 @@
 import SwiftUI
+import AVFoundation
+import Firebase
+import FirebaseFirestore
+import Combine
 
-// Temporary model structs for compilation - should be moved to Models folder
-struct Story: Identifiable, Codable {
-    let id: String
-    let username: String
-    let timestamp: Date
-    let mediaURL: String
-    let isExpired: Bool
-}
+// Import all sophisticated ViewModels and Models
+import Foundation
 
-struct Conversation: Identifiable, Codable {
-    let id: String
-    let otherUserName: String
-    let lastMessage: String?
-    let lastMessageTime: Date
-    let unreadCount: Int
-}
-
-struct ConversationView: View {
-    let conversation: Conversation
-    
-    var body: some View {
-        Text("Conversation with \(conversation.otherUserName)")
-            .navigationTitle("Chat")
-    }
-}
+// Models are already defined in Models folder
 
 // Embedded views for compilation - temporary until separate files are properly included
 struct StoriesView: View {
-    @EnvironmentObject var firebaseManager: FirebaseManager
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @EnvironmentObject var friendsViewModel: FriendsViewModel
     @State private var stories: [Story] = []
     @State private var isLoading = true
     
@@ -87,17 +71,17 @@ struct StoriesView: View {
         // Simulate Firebase Storage loading
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
-        guard let currentUser = firebaseManager.currentUser else {
+        guard let currentUser = authViewModel.currentUser else {
             stories = []
             isLoading = false
             return
         }
         
-        // Mock stories data - integrated with FirebaseManager
+        // Mock stories data - integrated with AuthenticationViewModel
         stories = [
-            Story(id: "1", username: "alice", timestamp: Date().addingTimeInterval(-3600), mediaURL: "https://example.com/story1.jpg", isExpired: false),
-            Story(id: "2", username: "bob", timestamp: Date().addingTimeInterval(-7200), mediaURL: "https://example.com/story2.jpg", isExpired: false),
-            Story(id: "3", username: "charlie", timestamp: Date().addingTimeInterval(-25200), mediaURL: "https://example.com/story3.jpg", isExpired: true)
+            Story(userId: "1", username: "alice", mediaURL: "https://example.com/story1.jpg"),
+            Story(userId: "2", username: "bob", mediaURL: "https://example.com/story2.jpg"),
+            Story(userId: "3", username: "charlie", mediaURL: "https://example.com/story3.jpg")
         ]
         
         isLoading = false
@@ -124,11 +108,11 @@ struct StoryRowView: View {
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text(story.timestamp, style: .relative)
+                Text(story.createdAt, style: .relative)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                if !story.isExpired {
+                if !story.hasExpired {
                     Text("• Active")
                         .font(.caption)
                         .foregroundColor(.green)
@@ -158,7 +142,7 @@ struct StoryRowView: View {
 }
 
 struct ChatView: View {
-    @EnvironmentObject var firebaseManager: FirebaseManager
+    @EnvironmentObject var friendsViewModel: FriendsViewModel
     @State private var conversations: [Conversation] = []
     @State private var isLoading = true
     
@@ -188,7 +172,7 @@ struct ChatView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List(conversations) { conversation in
-                        NavigationLink(destination: ConversationView(conversation: conversation)) {
+                        NavigationLink(destination: ConversationDetailView(conversation: conversation)) {
                             ConversationRowView(conversation: conversation)
                         }
                         .listRowBackground(Color.clear)
@@ -211,30 +195,20 @@ struct ChatView: View {
     private func loadConversations() async {
         isLoading = true
         
-        guard let currentUserId = firebaseManager.currentUser?.uid else {
-            conversations = [
-                Conversation(id: "1", otherUserName: "Alice", lastMessage: "Hey! How's it going?", lastMessageTime: Date().addingTimeInterval(-300), unreadCount: 2),
-                Conversation(id: "2", otherUserName: "Bob", lastMessage: "Check out this photo!", lastMessageTime: Date().addingTimeInterval(-3600), unreadCount: 0),
-                Conversation(id: "3", otherUserName: "Charlie", lastMessage: "Let's hang out later", lastMessageTime: Date().addingTimeInterval(-7200), unreadCount: 1)
-            ]
-            isLoading = false
-            return
-        }
-        
-        do {
-            // Mock conversations integrated with FirebaseManager
-            conversations = [
-                Conversation(id: "1", otherUserName: "Alice", lastMessage: "Real Firebase message!", lastMessageTime: Date().addingTimeInterval(-300), unreadCount: 2)
-            ]
-        } catch {
-            print("Failed to load conversations: \(error)")
-            conversations = [
-                Conversation(id: "1", otherUserName: "Alice", lastMessage: "Hey! How's it going?", lastMessageTime: Date().addingTimeInterval(-300), unreadCount: 2),
-                Conversation(id: "2", otherUserName: "Bob", lastMessage: "Check out this photo!", lastMessageTime: Date().addingTimeInterval(-3600), unreadCount: 0)
-            ]
-        }
+        // Use FriendsViewModel to load conversations
+        await friendsViewModel.loadConversations()
+        conversations = friendsViewModel.conversations
         
         isLoading = false
+    }
+}
+
+struct ConversationDetailView: View {
+    let conversation: Conversation
+    
+    var body: some View {
+        Text("Conversation with \(conversation.otherUserName)")
+            .navigationTitle("Chat")
     }
 }
 
@@ -301,8 +275,11 @@ struct ConversationRowView: View {
 struct MainAppView: View {
     @State private var selectedTab = 0
     @Binding var isAuthenticated: Bool
-    // Use FirebaseManager temporarily until import issues resolved
-    @StateObject private var firebaseManager = FirebaseManager.shared
+    
+    // Connect to sophisticated ViewModels from environment
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @EnvironmentObject var cameraViewModel: CameraViewModel
+    @EnvironmentObject var friendsViewModel: FriendsViewModel
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -313,7 +290,9 @@ struct MainAppView: View {
                 }
                 .tag(0)
                 .accessibilityIdentifier("CameraTab")
-                .environmentObject(firebaseManager)
+                .environmentObject(authViewModel)
+                .environmentObject(cameraViewModel)
+                .environmentObject(friendsViewModel)
             
             StoriesView()
                 .tabItem {
@@ -322,7 +301,9 @@ struct MainAppView: View {
                 }
                 .tag(1)
                 .accessibilityIdentifier("StoriesTab")
-                .environmentObject(firebaseManager)
+                .environmentObject(authViewModel)
+                .environmentObject(cameraViewModel)
+                .environmentObject(friendsViewModel)
             
             ChatView()
                 .tabItem {
@@ -331,7 +312,9 @@ struct MainAppView: View {
                 }
                 .tag(2)
                 .accessibilityIdentifier("ChatTab")
-                .environmentObject(firebaseManager)
+                .environmentObject(authViewModel)
+                .environmentObject(cameraViewModel)
+                .environmentObject(friendsViewModel)
             
             ProfileView(isAuthenticated: $isAuthenticated)
                 .tabItem {
@@ -347,41 +330,46 @@ struct MainAppView: View {
 }
 
 struct CameraView: View {
-    @EnvironmentObject var firebaseManager: FirebaseManager
+    @EnvironmentObject var cameraViewModel: CameraViewModel
     @State private var isCapturing = false
     
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            // Camera preview placeholder - will be real camera once CameraViewModel imports fixed
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .overlay(
-                    Text("📷 Camera Preview")
-                        .foregroundColor(.white)
-                        .font(.title2)
-                )
-                .ignoresSafeArea()
+            // Real camera preview - connect to CameraViewModel
+            if cameraViewModel.authorizationStatus == .authorized {
+                CameraPreviewRepresentable(cameraViewModel: cameraViewModel)
+                    .ignoresSafeArea()
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .overlay(
+                        Text("📷 Camera Access Required")
+                            .foregroundColor(.white)
+                            .font(.title2)
+                    )
+                    .ignoresSafeArea()
+            }
             
             VStack {
                 Spacer()
                 
                 HStack(spacing: 50) {
-                    // Flash button - functional once CameraViewModel imports fixed
+                    // Flash button - connect to real CameraViewModel
                     Button(action: { 
-                        print("Flash toggled - CameraViewModel integration pending") 
+                        cameraViewModel.toggleFlash()
                     }) {
-                        Image(systemName: "bolt.slash.fill")
+                        Image(systemName: cameraViewModel.flashMode == .off ? "bolt.slash.fill" : "bolt.fill")
                             .font(.title)
                             .foregroundColor(.white)
                     }
                     .accessibilityIdentifier("Flash")
                     
-                    // Capture button - functional once CameraViewModel imports fixed
+                    // Capture button - connect to real CameraViewModel
                     Button(action: { 
                         isCapturing.toggle()
-                        print("Photo captured - CameraViewModel integration pending")
+                        cameraViewModel.capturePhoto()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             isCapturing = false
                         }
@@ -396,11 +384,11 @@ struct CameraView: View {
                             )
                     }
                     .accessibilityIdentifier("Capture")
-                    .disabled(isCapturing)
+                    .disabled(cameraViewModel.isCapturing)
                     
-                    // Switch camera button - functional once CameraViewModel imports fixed
+                    // Switch camera button - connect to real CameraViewModel
                     Button(action: { 
-                        print("Camera switched - CameraViewModel integration pending")
+                        cameraViewModel.switchCamera()
                     }) {
                         Image(systemName: "camera.rotate.fill")
                             .font(.title)
@@ -415,7 +403,7 @@ struct CameraView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Text("📸 Camera Integration Ready")
+                    Text("📸 Real Camera Integration")
                         .foregroundColor(.white)
                         .padding()
                         .background(Color.black.opacity(0.5))
@@ -426,15 +414,34 @@ struct CameraView: View {
             }
         }
         .onAppear {
-            print("Camera view appeared - ready for CameraViewModel integration")
+            cameraViewModel.setupCamera()
         }
         .navigationBarHidden(true)
     }
 }
 
+struct CameraPreviewRepresentable: UIViewRepresentable {
+    @ObservedObject var cameraViewModel: CameraViewModel
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: UIScreen.main.bounds)
+        if let previewLayer = cameraViewModel.previewLayer {
+            previewLayer.frame = view.bounds
+            view.layer.addSublayer(previewLayer)
+        }
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        if let previewLayer = cameraViewModel.previewLayer {
+            previewLayer.frame = uiView.bounds
+        }
+    }
+}
 
 struct ProfileView: View {
     @Binding var isAuthenticated: Bool
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
     
     var body: some View {
         NavigationView {
@@ -454,13 +461,23 @@ struct ProfileView: View {
                                 .font(.system(size: 40))
                         )
                     
-                    Text("jleechan")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    
-                    Text("SnapClone User")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    if let user = authViewModel.currentUser {
+                        Text(user.email ?? "User")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text("SnapClone User")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("jleechan")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text("SnapClone User")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 // Stats
@@ -508,7 +525,10 @@ struct ProfileView: View {
                     
                     Button("Sign Out") {
                         withAnimation {
-                            isAuthenticated = false
+                            Task {
+                                await authViewModel.signOut()
+                                isAuthenticated = false
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -526,5 +546,8 @@ struct ProfileView: View {
 }
 
 #Preview {
-    MainAppView(isAuthenticated: .constant(true))
+    MainAppView(isAuthenticated: Binding.constant(true))
+        .environmentObject(AuthenticationViewModel())
+        .environmentObject(CameraViewModel())
+        .environmentObject(FriendsViewModel())
 }
