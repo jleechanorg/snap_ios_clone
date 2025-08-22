@@ -20,7 +20,7 @@ class FirebaseManager: ObservableObject {
     
     // MARK: - Published Properties for SwiftUI Integration
     @Published var isConfigured = false
-    @Published var currentUser: User?
+    @Published var currentUser: FirebaseAuth.User?
     @Published var isAuthenticating = false
     @Published var lastError: Error?
     
@@ -155,7 +155,7 @@ class FirebaseManager: ObservableObject {
     // MARK: - Authentication Methods
     
     /// Sign in with email and password
-    func signIn(email: String, password: String) async throws -> User {
+    func signIn(email: String, password: String) async throws -> FirebaseAuth.User {
         guard isConfigured else {
             throw FirebaseConfigurationError.notConfigured
         }
@@ -181,7 +181,7 @@ class FirebaseManager: ObservableObject {
     }
     
     /// Create new user account
-    func createUser(email: String, password: String) async throws -> User {
+    func createUser(email: String, password: String) async throws -> FirebaseAuth.User {
         guard isConfigured else {
             throw FirebaseConfigurationError.notConfigured
         }

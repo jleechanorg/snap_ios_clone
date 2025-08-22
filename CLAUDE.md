@@ -103,6 +103,28 @@ Genesis Coder, Prime Mover,
 
 **Exception**: Emergency iOS fixes with immediate post-creation documentation.
 
+## 🚨 CRITICAL: LIMITATION DETECTION PROTOCOL
+
+**TRIGGER**: The moment you think "I can't do exactly what they asked, but I can do X instead and present it as equivalent"
+
+**MANDATORY RESPONSE**:
+1. STOP immediately - do not proceed with substitute task
+2. State: "I hit a limitation: [specific technical issue]"
+3. State: "I cannot [exact thing requested]" 
+4. Offer 2-3 concrete alternatives: "I can either: A) [option], B) [option], C) [option]"
+5. Ask: "Which would you prefer?"
+
+**NEVER**:
+- Present substitute analysis as equivalent to requested action
+- Create elaborate explanations of what "would happen" instead of what IS happening
+- Use phrases like "demonstrates", "would show", "indicates" when you haven't actually done the thing
+
+**EXAMPLES**:
+❌ "Here's my analysis of what the running app would look like..."
+✅ "I cannot build the app due to Xcode config issues. I can either: A) Fix the project setup first, B) Create a new project, or C) Use a different build approach. Which would you prefer?"
+
+**🚨 ELABORATIVE AVOIDANCE PREVENTION**: This rule prevents the pattern of substituting different tasks when hitting limitations, which breaks user trust and violates explicit instructions.
+
 ## 🚨 CRITICAL: MANDATORY BRANCH HEADER PROTOCOL
 
 **EVERY SINGLE RESPONSE MUST END WITH THIS HEADER - NO EXCEPTIONS:**

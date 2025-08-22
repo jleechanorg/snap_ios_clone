@@ -237,7 +237,7 @@ class CameraService: NSObject, ObservableObject {
     
     // MARK: - Photo Capture
     func capturePhoto() {
-        sessionQueue.async { [weak self] in
+        let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             
             let photoSettings = AVCapturePhotoSettings()
@@ -258,12 +258,11 @@ class CameraService: NSObject, ObservableObject {
             photoSettings.isHighResolutionPhotoEnabled = true
             
             // Set photo quality
-            if let codec = photoSettings.availablePhotoCodecTypes.first {
-                photoSettings.photoQualityPrioritization = .quality
-            }
+            photoSettings.photoQualityPrioritization = .quality
             
             self.photoOutput.capturePhoto(with: photoSettings, delegate: self)
         }
+        sessionQueue.async(execute: workItem)
     }
     
     // MARK: - Preview Layer
@@ -308,6 +307,8 @@ enum CameraError: LocalizedError {
     case captureFailed
     case imageProcessingFailed
     case permissionDenied
+    case userNotAuthenticated
+    case uploadFailed
     case unknown
     
     var errorDescription: String? {
@@ -328,6 +329,10 @@ enum CameraError: LocalizedError {
             return "Image processing failed"
         case .permissionDenied:
             return "Camera permission denied"
+        case .userNotAuthenticated:
+            return "User not authenticated"
+        case .uploadFailed:
+            return "Failed to upload image"
         case .unknown:
             return "Unknown camera error"
         }

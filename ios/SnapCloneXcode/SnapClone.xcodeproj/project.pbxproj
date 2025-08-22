@@ -16,6 +16,19 @@
 		607FACD61AFB9204008FA782 /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* MainAppView.swift */; };
 		A403613274814D53B69C1F7C /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED933EA4AF6C46C4BAF38C43 /* FirebaseManager.swift */; };
 		AD76D9CA585C455EB006E3BF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 62D1F7E3E2E94E569F8CEB22 /* GoogleService-Info.plist */; };
+		CAM001001AFB9204008FA782 /* CameraViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM001000AFB9204008FA782 /* CameraViewModel.swift */; };
+		CAM002001AFB9204008FA782 /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM002000AFB9204008FA782 /* CameraService.swift */; };
+		CAM003001AFB9204008FA782 /* CameraSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM003000AFB9204008FA782 /* CameraSettings.swift */; };
+		CAM004001AFB9204008FA782 /* MediaUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM004000AFB9204008FA782 /* MediaUpload.swift */; };
+		CAM005001AFB9204008FA782 /* FirebaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM005000AFB9204008FA782 /* FirebaseAuthService.swift */; };
+		CAM013001AFB9204008FA782 /* FirebaseMessagingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM013000AFB9204008FA782 /* FirebaseMessagingService.swift */; };
+		CAM006001AFB9204008FA782 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM006000AFB9204008FA782 /* Message.swift */; };
+		CAM007001AFB9204008FA782 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM007000AFB9204008FA782 /* User.swift */; };
+		CAM008001AFB9204008FA782 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM008000AFB9204008FA782 /* Conversation.swift */; };
+		CAM009001AFB9204008FA782 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM009000AFB9204008FA782 /* Photo.swift */; };
+		CAM010001AFB9204008FA782 /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM010000AFB9204008FA782 /* Story.swift */; };
+		CAM011001AFB9204008FA782 /* CameraPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM011000AFB9204008FA782 /* CameraPosition.swift */; };
+		CAM012001AFB9204008FA782 /* FlashMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM012000AFB9204008FA782 /* FlashMode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,7 +37,20 @@
 		607FACD51AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD71AFB9204008FA782 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		62D1F7E3E2E94E569F8CEB22 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		ED933EA4AF6C46C4BAF38C43 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/FirebaseManager.swift; sourceTree = "<group>"; };
+		CAM001000AFB9204008FA782 /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
+		CAM002000AFB9204008FA782 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		CAM003000AFB9204008FA782 /* CameraSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSettings.swift; sourceTree = "<group>"; };
+		CAM004000AFB9204008FA782 /* MediaUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaUpload.swift; sourceTree = "<group>"; };
+		CAM005000AFB9204008FA782 /* FirebaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthService.swift; sourceTree = "<group>"; };
+		CAM013000AFB9204008FA782 /* FirebaseMessagingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseMessagingService.swift; sourceTree = "<group>"; };
+		CAM006000AFB9204008FA782 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		CAM007000AFB9204008FA782 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		CAM008000AFB9204008FA782 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
+		CAM009000AFB9204008FA782 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
+		CAM010000AFB9204008FA782 /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
+		CAM011000AFB9204008FA782 /* CameraPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPosition.swift; sourceTree = "<group>"; };
+		CAM012000AFB9204008FA782 /* FlashMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashMode.swift; sourceTree = "<group>"; };
+		ED933EA4AF6C46C4BAF38C43 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,11 +90,72 @@
 			children = (
 				607FACD41AFB9204008FA782 /* SnapCloneApp.swift */,
 				607FACD71AFB9204008FA782 /* MainAppView.swift */,
-				ED933EA4AF6C46C4BAF38C43 /* FirebaseManager.swift */,
+				GRP001000AFB9204008FA782 /* Models */,
+				GRP002000AFB9204008FA782 /* ViewModels */,
+				GRP003000AFB9204008FA782 /* Services */,
 				62D1F7E3E2E94E569F8CEB22 /* GoogleService-Info.plist */,
 				607FACD51AFB9204008FA782 /* Info.plist */,
 			);
 			path = SnapClone;
+			sourceTree = "<group>";
+		};
+		GRP001000AFB9204008FA782 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				CAM003000AFB9204008FA782 /* CameraSettings.swift */,
+				CAM004000AFB9204008FA782 /* MediaUpload.swift */,
+				CAM006000AFB9204008FA782 /* Message.swift */,
+				CAM007000AFB9204008FA782 /* User.swift */,
+				CAM008000AFB9204008FA782 /* Conversation.swift */,
+				CAM009000AFB9204008FA782 /* Photo.swift */,
+				CAM010000AFB9204008FA782 /* Story.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GRP002000AFB9204008FA782 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				GRP002001AFB9204008FA782 /* Camera */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		GRP002001AFB9204008FA782 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				CAM001000AFB9204008FA782 /* CameraViewModel.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		GRP003000AFB9204008FA782 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				ED933EA4AF6C46C4BAF38C43 /* FirebaseManager.swift */,
+				GRP003001AFB9204008FA782 /* Camera */,
+				GRP003002AFB9204008FA782 /* Firebase */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		GRP003001AFB9204008FA782 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				CAM002000AFB9204008FA782 /* CameraService.swift */,
+				CAM011000AFB9204008FA782 /* CameraPosition.swift */,
+				CAM012000AFB9204008FA782 /* FlashMode.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		GRP003002AFB9204008FA782 /* Firebase */ = {
+			isa = PBXGroup;
+			children = (
+				CAM005000AFB9204008FA782 /* FirebaseAuthService.swift */,
+				CAM013000AFB9204008FA782 /* FirebaseMessagingService.swift */,
+			);
+			path = Firebase;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -147,6 +234,18 @@
 				607FACD31AFB9204008FA782 /* SnapCloneApp.swift in Sources */,
 				607FACD61AFB9204008FA782 /* MainAppView.swift in Sources */,
 				A403613274814D53B69C1F7C /* FirebaseManager.swift in Sources */,
+				CAM001001AFB9204008FA782 /* CameraViewModel.swift in Sources */,
+				CAM002001AFB9204008FA782 /* CameraService.swift in Sources */,
+				CAM003001AFB9204008FA782 /* CameraSettings.swift in Sources */,
+				CAM004001AFB9204008FA782 /* MediaUpload.swift in Sources */,
+				CAM005001AFB9204008FA782 /* FirebaseAuthService.swift in Sources */,
+				CAM006001AFB9204008FA782 /* Message.swift in Sources */,
+				CAM007001AFB9204008FA782 /* User.swift in Sources */,
+				CAM008001AFB9204008FA782 /* Conversation.swift in Sources */,
+				CAM009001AFB9204008FA782 /* Photo.swift in Sources */,
+				CAM010001AFB9204008FA782 /* Story.swift in Sources */,
+				CAM011001AFB9204008FA782 /* CameraPosition.swift in Sources */,
+				CAM012001AFB9204008FA782 /* FlashMode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

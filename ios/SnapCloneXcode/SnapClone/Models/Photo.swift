@@ -139,7 +139,7 @@ final class Photo: NSObject, Codable, Identifiable, ObservableObject {
         }
         
         if let expiresAtTimestamp = try? container.decodeIfPresent(Timestamp.self, forKey: .expiresAt) {
-            expiresAt = expiresAtTimestamp?.dateValue()
+            expiresAt = expiresAtTimestamp.dateValue()
         } else {
             expiresAt = try container.decodeIfPresent(Date.self, forKey: .expiresAt)
         }
@@ -149,7 +149,8 @@ final class Photo: NSObject, Codable, Identifiable, ObservableObject {
         viewDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .viewDuration) ?? 10.0
         maxViews = try container.decodeIfPresent(Int.self, forKey: .maxViews) ?? 1
         viewCount = try container.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
-        metadata = try container.decodeIfPresent([String: Any].self, forKey: .metadata) ?? [:]
+        // Metadata handling - skip for now as [String: Any] isn't Codable directly
+        metadata = [:]
         
         super.init()
     }
@@ -432,8 +433,8 @@ final class Photo: NSObject, Codable, Identifiable, ObservableObject {
         return lhs.id == rhs.id
     }
     
-    override func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    override var hash: Int {
+        return id.hashValue
     }
 }
 

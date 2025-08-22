@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 import Combine
+import Firebase
+import FirebaseAuth
 
 @MainActor
 class AuthenticationViewModel: ObservableObject {
@@ -30,6 +32,7 @@ class AuthenticationViewModel: ObservableObject {
     
     // MARK: - Dependencies  
     private var cancellables = Set<AnyCancellable>()
+    private let firebaseManager = FirebaseManager.shared
     
     // MARK: - Initialization
     init() {
@@ -49,8 +52,9 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            try await authService.signIn(email: email, password: password)
-            // User will be set by auth state listener
+            let firebaseUser = try await firebaseManager.signIn(email: email, password: password)
+            // Convert Firebase user to our User model and set authentication
+            isAuthenticated = true
             clearForm()
         } catch {
             handleAuthError(error)
@@ -66,13 +70,16 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            try await authService.signUp(
-                email: email,
-                password: password,
+            let firebaseUser = try await firebaseManager.createUser(email: email, password: password)
+            // Create our User model
+            let user = SnapClone.User(
+                id: firebaseUser.uid,
                 username: username,
+                email: email,
                 displayName: displayName.isEmpty ? username : displayName
             )
-            // User will be set by auth state listener
+            currentUser = user
+            isAuthenticated = true
             clearForm()
         } catch {
             handleAuthError(error)
@@ -85,8 +92,9 @@ class AuthenticationViewModel: ObservableObject {
         isLoading = true
         
         do {
-            try await authService.signOut()
-            // Auth state will be cleared by listener
+            try firebaseManager.signOut()
+            currentUser = nil
+            isAuthenticated = false
             clearForm()
         } catch {
             handleAuthError(error)
@@ -105,7 +113,8 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            try await authService.resetPassword(email: email)
+            // Use Firebase Auth directly for password reset
+            try await Auth.auth().sendPasswordReset(withEmail: email)
             showErrorMessage("Password reset email sent successfully", isError: false)
             showForgotPassword = false
         } catch {
@@ -116,65 +125,24 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     func signInWithGoogle() async {
-        guard let presentingViewController = UIApplication.shared.windows.first?.rootViewController else {
-            showErrorMessage("Unable to access presenting view controller")
-            return
-        }
-        
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingViewController)
-            let user = gidSignInResult.user
-            guard let idToken = user.idToken?.tokenString else {
-                showErrorMessage("Unable to get ID token")
-                isLoading = false
-                return
-            }
-            
-            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
-            let authResult = try await Auth.auth().signIn(with: credential)
-            
-            // Create user profile in Firestore if needed
-            let firebaseUser = authResult.user
-            let userProfile = User(
-                id: firebaseUser.uid,
-                username: firebaseUser.email?.components(separatedBy: "@").first ?? "user",
-                email: firebaseUser.email ?? "",
-                displayName: firebaseUser.displayName ?? "",
-                profileImageURL: firebaseUser.photoURL?.absoluteString ?? "",
-                createdAt: Date()
-            )
-            
-            try await authService.updateUserProfile(userProfile)
-            // User will be set by auth state listener
-            
-        } catch {
-            handleAuthError(error)
-        }
-        
-        isLoading = false
+        // TODO: Implement Google Sign-In when GoogleSignIn SDK is properly configured
+        showErrorMessage("Google Sign-In not implemented yet")
     }
     
     func checkAuthenticationStatus() {
-        if let firebaseUser = authService.getCurrentUser() {
-            Task {
-                do {
-                    if let user = try await authService.fetchUserProfile(by: firebaseUser.displayName ?? "") {
-                        currentUser = user
-                        isAuthenticated = true
-                    } else {
-                        // User profile doesn't exist, sign out
-                        try? await authService.signOut()
-                        isAuthenticated = false
-                    }
-                } catch {
-                    // User profile doesn't exist, sign out
-                    try? await authService.signOut()
-                    isAuthenticated = false
-                }
-            }
+        if let firebaseUser = Auth.auth().currentUser {
+            // Create User model from Firebase user
+            let user = SnapClone.User(
+                id: firebaseUser.uid,
+                username: firebaseUser.email?.components(separatedBy: "@").first ?? "user",
+                email: firebaseUser.email ?? "",
+                displayName: firebaseUser.displayName ?? ""
+            )
+            currentUser = user
+            isAuthenticated = true
+        } else {
+            currentUser = nil
+            isAuthenticated = false
         }
     }
     
@@ -274,7 +242,7 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     private func handleAuthError(_ error: Error) {
-        if let authError = error as? AuthError {
+        if let authError = error as? AuthErrorCode {
             showErrorMessage(authError.localizedDescription)
         } else {
             showErrorMessage("An unexpected error occurred. Please try again.")

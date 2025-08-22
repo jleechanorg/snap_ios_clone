@@ -110,7 +110,7 @@ class MCPServer: ObservableObject {
 }
 
 // MARK: - MCP Connection Handler
-class MCPConnection: NSObject, Hashable {
+class MCPConnection: NSObject {
     
     private let connection: NWConnection
     private weak var server: MCPServer?
@@ -210,7 +210,7 @@ class MCPConnection: NSObject, Hashable {
         return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
     }
     
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
+    override var hash: Int {
+        return ObjectIdentifier(self).hashValue
     }
 }
