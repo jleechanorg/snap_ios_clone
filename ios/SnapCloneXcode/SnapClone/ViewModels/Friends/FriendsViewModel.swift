@@ -400,3 +400,41 @@ enum FriendSortOption: String, CaseIterable {
         return rawValue
     }
 }
+
+enum FriendshipStatus: String, CaseIterable {
+    case none = "none"
+    case requestSent = "requestSent"
+    case requestReceived = "requestReceived"
+    case friends = "friends"
+    case blocked = "blocked"
+    
+    var displayName: String {
+        switch self {
+        case .none: return "Add Friend"
+        case .requestSent: return "Request Sent"
+        case .requestReceived: return "Accept Request"
+        case .friends: return "Friends"
+        case .blocked: return "Blocked"
+        }
+    }
+    
+    var systemImageName: String {
+        switch self {
+        case .none: return "person.badge.plus"
+        case .requestSent: return "clock"
+        case .requestReceived: return "person.badge.clock"
+        case .friends: return "person.2.fill"
+        case .blocked: return "person.badge.minus"
+        }
+    }
+    
+    var buttonColor: Color {
+        switch self {
+        case .none: return .blue
+        case .requestSent: return .orange
+        case .requestReceived: return .green
+        case .friends: return .green
+        case .blocked: return .red
+        }
+    }
+}

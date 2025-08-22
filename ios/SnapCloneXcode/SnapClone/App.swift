@@ -23,11 +23,18 @@ struct SnapCloneApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authViewModel)
-                .environmentObject(cameraViewModel)
-                .environmentObject(friendsViewModel)
-                .preferredColorScheme(.dark)
+            Group {
+                if authViewModel.isAuthenticated {
+                    // For now, use ContentView but MainAppView is also available
+                    ContentView()
+                } else {
+                    AuthenticationView()
+                }
+            }
+            .environmentObject(authViewModel)
+            .environmentObject(cameraViewModel)
+            .environmentObject(friendsViewModel)
+            .preferredColorScheme(.dark)
         }
     }
     

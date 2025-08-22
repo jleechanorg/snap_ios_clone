@@ -265,8 +265,8 @@ final class User: NSObject, Codable, Identifiable, ObservableObject {
         return lhs.id == rhs.id
     }
     
-    override func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    override var hash: Int {
+        return id.hashValue
     }
 }
 

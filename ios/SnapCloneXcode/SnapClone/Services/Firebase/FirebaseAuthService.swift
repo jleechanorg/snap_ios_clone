@@ -67,6 +67,10 @@ class FirebaseAuthService: AuthServiceProtocol {
         return auth.currentUser
     }
     
+    var isAuthenticated: Bool {
+        return auth.currentUser != nil
+    }
+    
     func resetPassword(email: String) async throws {
         try await auth.sendPasswordReset(withEmail: email)
     }
