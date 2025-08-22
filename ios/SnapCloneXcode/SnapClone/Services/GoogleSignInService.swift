@@ -182,7 +182,7 @@ enum GoogleSignInError: LocalizedError {
 // MARK: - User Model Extension
 
 extension User {
-    init(id: String, username: String, email: String, displayName: String, profileImageURL: String? = nil, isOnline: Bool = false, lastSeen: Date = Date(), joinedDate: Date = Date(), authProvider: String = "google") {
+    convenience init(id: String, username: String, email: String, displayName: String, profileImageURL: String? = nil, isOnline: Bool = false, lastSeen: Date = Date(), joinedDate: Date = Date(), authProvider: String = "google") {
         self.init()
         self.id = id
         self.username = username

@@ -55,3 +55,4 @@ ios/SnapCloneXcode/Firebase.zip
 
 # Rely on global ~/.claude configuration instead of project-specific
 .claude/
+ios/SnapCloneXcode/build/

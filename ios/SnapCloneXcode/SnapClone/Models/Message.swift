@@ -190,13 +190,13 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         }
         
         if let expiresAtTimestamp = try? container.decodeIfPresent(Timestamp.self, forKey: .expiresAt) {
-            expiresAt = expiresAtTimestamp?.dateValue()
+            expiresAt = expiresAtTimestamp.dateValue()
         } else {
             expiresAt = try container.decodeIfPresent(Date.self, forKey: .expiresAt)
         }
         
         if let viewedAtTimestamp = try? container.decodeIfPresent(Timestamp.self, forKey: .viewedAt) {
-            viewedAt = viewedAtTimestamp?.dateValue()
+            viewedAt = viewedAtTimestamp.dateValue()
         } else {
             viewedAt = try container.decodeIfPresent(Date.self, forKey: .viewedAt)
         }
@@ -204,7 +204,7 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         isEphemeral = try container.decodeIfPresent(Bool.self, forKey: .isEphemeral) ?? true
         viewDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .viewDuration) ?? 10.0
         status = try container.decodeIfPresent(MessageStatus.self, forKey: .status) ?? .sent
-        metadata = try container.decodeIfPresent([String: Any].self, forKey: .metadata) ?? [:]
+        metadata = [:]  // TODO: Implement proper metadata decoding
         
         super.init()
     }
@@ -334,9 +334,15 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         
         let id = document.documentID
         guard let senderId = data["senderId"] as? String,
-              let receiverId = data["receiverId"] as? String,
-              let content = data["content"] as? String,
-              let typeString = data["type"] as? String,
+              let receiverId = data["receiverId"] as? String else {
+            return nil
+        }
+        
+        let conversationId = data["conversationId"] as? String ?? ""
+        let content = data["content"] as? String
+        let mediaURL = data["mediaURL"] as? String
+        
+        guard let typeString = data["type"] as? String,
               let type = MessageType(rawValue: typeString) else {
             return nil
         }
@@ -377,10 +383,12 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         
         return Message(
             id: id,
+            conversationId: conversationId,
             senderId: senderId,
             receiverId: receiverId,
             content: content,
-            type: type,
+            mediaURL: mediaURL,
+            messageType: type,
             timestamp: timestamp,
             expiresAt: expiresAt,
             viewedAt: viewedAt,
@@ -422,8 +430,8 @@ final class Message: NSObject, Codable, Identifiable, ObservableObject {
         return lhs.id == rhs.id
     }
     
-    override func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    override var hash: Int {
+        return id.hashValue
     }
 }
 

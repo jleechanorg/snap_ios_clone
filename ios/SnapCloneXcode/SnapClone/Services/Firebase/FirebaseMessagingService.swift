@@ -1,11 +1,14 @@
 import Foundation
+import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseStorage
 import Combine
 
 protocol MessagingServiceProtocol {
     func sendMessage(_ message: Message) async throws
     func getConversation(with userId: String) async throws -> Conversation
+    func getUserConversations(userId: String) async throws -> [Conversation]
     func getMessages(for conversationId: String, limit: Int) async throws -> [Message]
     func listenToMessages(for conversationId: String) -> AnyPublisher<[Message], Error>
     func markMessageAsViewed(_ messageId: String) async throws
@@ -13,7 +16,7 @@ protocol MessagingServiceProtocol {
     func reportScreenshot(for messageId: String) async throws
 }
 
-class FirebaseMessagingService: MessagingServiceProtocol {
+class FirebaseMessagingService: ObservableObject, MessagingServiceProtocol {
     static let shared = FirebaseMessagingService()
     
     private let firestore = Firestore.firestore()
@@ -199,6 +202,19 @@ class FirebaseMessagingService: MessagingServiceProtocol {
         ])
     }
     
+    func getUserConversations(userId: String) async throws -> [Conversation] {
+        // Query conversations where user is a participant
+        let conversationsQuery = firestore.collection("conversations")
+            .whereField("participants", arrayContains: userId)
+            .order(by: "lastMessageAt", descending: true)
+        
+        let snapshot = try await conversationsQuery.getDocuments()
+        
+        return try snapshot.documents.compactMap { document in
+            try document.data(as: Conversation.self)
+        }
+    }
+    
     // MARK: - Media Upload
     
     private func uploadMedia(localURL: URL) async throws -> String {
@@ -207,7 +223,7 @@ class FirebaseMessagingService: MessagingServiceProtocol {
         
         let data = try Data(contentsOf: localURL)
         
-        _ = try await storageRef.putDataAsync(data)
+        _ = try await storageRef.putData(data)
         let downloadURL = try await storageRef.downloadURL()
         
         return downloadURL.absoluteString
